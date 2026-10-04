@@ -22,6 +22,10 @@ MAX_SERVICE_DISTANCE_KM = 15.0
 # REQ-FN-008 / AS-06 ค้นช่างว่างกี่วันข้างหน้า
 SEARCH_DAYS_AHEAD = 7
 
+# SPEC-ROUTE REQ-FN-002: ใช้รัศมีค้นหาตามเส้นทาง 5 กม. และ REQ-OP-002: ค่า GPS error ไม่เกิน 15%
+ROUTE_RADIUS_KM = float(os.getenv("ROUTE_RADIUS_KM", "5.0"))
+GPS_ACCURACY_ERROR_PERCENT = float(os.getenv("GPS_ACCURACY_ERROR_PERCENT", "15.0"))
+
 # AC-07-04 (CR-01) ช่วงใกล้เคียงต้องเริ่มห่างจากช่วงที่เลือกไม่เกินกี่ชั่วโมง
 ALTERNATIVE_WINDOW_HOURS = 3
 

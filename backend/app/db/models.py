@@ -37,6 +37,44 @@ class ServiceAddress(Base):
     lng: Mapped[float] = mapped_column(Float)
 
 
+class SellerProfile(Base):
+    __tablename__ = "seller_profiles"  # REQ-SEC-002 ซ่อนพิกัดบ้านจนกว่ากดรับงาน
+    id: Mapped[int] = mapped_column(primary_key=True)
+    customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"), unique=True)
+    user_type: Mapped[str] = mapped_column(String(20), default="household")
+    service_address_geo_point_lat: Mapped[float] = mapped_column(Float)
+    service_address_geo_point_lng: Mapped[float] = mapped_column(Float)
+    address_visible: Mapped[bool] = mapped_column(default=False)
+    consent_to_share_location: Mapped[bool] = mapped_column(default=False)
+    customer: Mapped[Customer] = relationship()
+
+
+class ScrapRequest(Base):
+    __tablename__ = "scrap_requests"  # REQ-FN-002, REQ-FN-001, REQ-BR-002
+    id: Mapped[int] = mapped_column(primary_key=True)
+    seller_id: Mapped[int] = mapped_column(ForeignKey("customers.id"))
+    geo_point_lat: Mapped[float] = mapped_column(Float)
+    geo_point_lng: Mapped[float] = mapped_column(Float)
+    scrap_type: Mapped[str] = mapped_column(String(50))
+    estimated_price: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(30), default="รอผู้รับงาน")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    accepted_by_saleng_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    seller: Mapped[Customer] = relationship()
+
+
+class PriceReference(Base):
+    __tablename__ = "price_references"  # REQ-FN-001 ราคากลางอ้างอิงประจำวัน
+    id: Mapped[int] = mapped_column(primary_key=True)
+    scrap_type: Mapped[str] = mapped_column(String(50))
+    date: Mapped[datetime] = mapped_column(DateTime)
+    base_price_min: Mapped[int] = mapped_column(Integer)
+    base_price_max: Mapped[int] = mapped_column(Integer)
+    unit: Mapped[str] = mapped_column(String(20), default="kg")
+
+
 class Technician(Base):
     __tablename__ = "technicians"
     id: Mapped[int] = mapped_column(primary_key=True)

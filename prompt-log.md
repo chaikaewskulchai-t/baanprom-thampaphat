@@ -111,3 +111,52 @@ AI ถาม: ยอดมัดจำบนหน้าจอเอาจาก
 cd backend && pytest -v -k "AC_" 2>&1 | tee ../specs/002-booking/test-run.txt  ผล 15 passed, 1 skipped
 cd frontend && npm test  ผล 1 passed
 กรอก ac-results.md รอบที่ 2 และสรุป gaps.md 10 แถว
+
+## #35 | 4 ต.ค. 2569 | Copilot Chat (Agent) | /plan specs/003-route/spec.md
+
+AI รายงาน 8 ส่วนตาม prompt /plan
+1. สรุปแนวทาง: จัดโครงระบบเป็น 3 ชั้นหลัก (ค้นหา-กรอง, lock/accept, privacy handling) พร้อมเน้น REQ-FN-002, REQ-BR-002, REQ-QA-002, REQ-SEC-002
+2. เทคโนโลยี: ระบุ 3 ชุดทางเลือก (FastAPI, Express, Django) และระบุว่า stack ยังไม่ได้ถูกเลือกจาก spec จึงต้องให้ทีมยืนยันก่อน finalize
+3. โมเดลข้อมูล: ออกแบบ `ScrapRequest`, `SalengProfile`, `SellerProfile`, `RouteMatch`, `VerificationAttempt`, `PriceReference` พร้อม traceability ไปยัง FR และ AC
+4. API/หน้าจอ: แยก endpoint คร่าว ๆ สำหรับ nearby request, detail, accept, verify, GPS และ UI
+5. ตารางตรวจ Constraints: ระบุ REQ-CON-002 ใช้แล้ว, REQ-CON-003 ยังไม่ได้ใช้ เพราะไม่เกี่ยวกับ workflow ใน feature นี้, SC-04 ใช้แล้ว
+6. แผนทดสอบ: จัด AC-04-01 ถึง AC-04-08 เป็น test cases พร้อมชื่อตามรูปแบบ `test_AC_04_xx`
+7. ลำดับงาน: 7 ขั้น เรียงจาก model -> API -> verification -> accept logic -> performance -> UI -> regression
+8. สิ่งที่ยังไม่ทำ: รอคำตอบเรื่อง concurrent accept, วิธีคำนวณระยะทาง 5 กม., handling ของ Thai-ID/DBD timeout และการตัดสินใจเรื่อง stack เทคโนโลยี
+
+ผล: สร้าง/ปรับ [specs/003-route/plan.md](specs/003-route/plan.md) เป็น draft แบบ traceable แต่ยังคงเป็นรอทีมยืนยันเทคโนโลยีและ Open Questions ก่อน final approval
+
+## #36 | 4 ต.ค. 2569 | Copilot Chat (Agent) | /tasks specs/003-route/spec.md
+
+AI รายงาน 3 ส่วนตาม prompt /tasks
+1. จำนวน task ทั้งหมด: 10 task, ในจำนวนนี้ 4 task ถูกปิดด้วย Open Questions (T-03, T-04, T-05, T-06)
+2. task ยากที่สุด: T-05 (single-accept + concurrency) และ T-06 (GPS + response time) เพราะมี Q-01/Q-02 ที่ยังเปิดและมีผลต่อ logic ที่ต้องวางก่อนเริ่มเขียนโค้ด
+3. AC ที่ทดสอบยาก: AC-04-06 และ AC-04-07 เสนอวิธีย่อส่วนด้วย mock GPS + performance check แบบ p95 พร้อมทีมต้องตัดสินใจเรื่องวิธีคำนวณระยะทาง 5 กม. ก่อน final test
+
+ผล: สร้าง/ปรับ [specs/003-route/tasks.md](specs/003-route/tasks.md) ให้สอดคล้องกับ spec.md + plan.md โดยมี traceability ครบทุก AC และ constraint ที่ระบุใน spec
+
+## #37 | 4 ต.ค. 2569 | Copilot Chat (Agent) | /implement T-02 specs/003-route/tasks.md
+
+AI ตรวจ 3 อย่างก่อนเริ่ม: task T-02 มีสถานะ "พร้อมทำ", ต้องทำหลัง T-01 เสร็จแล้ว, และช่อง "ไฟล์ที่แตะ" / "เสร็จเมื่อ" ไม่ว่าง จากนั้นเริ่มโดยสร้าง test ตาม AC-04-04 และ AC-04-08 ก่อนแก้โค้ด
+
+AI สร้าง test ทั้งสองชื่อดังนี้
+- test_AC_04_04_route_price_reference_schema
+- test_AC_04_08_route_private_address_visibility_schema
+
+ผล: ทดสอบก่อนแก้โค้ดล้มด้วย ImportError เพราะ `PriceReference` และ `SellerProfile` ยังไม่มีอยู่ใน [backend/app/db/models.py](backend/app/db/models.py)
+
+AI แก้เฉพาะไฟล์ที่อยู่ในช่อง "ไฟล์ที่แตะ" ของ T-02:
+- [backend/app/db/models.py](backend/app/db/models.py): เพิ่ม `SellerProfile`, `ScrapRequest`, `PriceReference`
+- [backend/app/config.py](backend/app/config.py): เพิ่มค่า `ROUTE_RADIUS_KM` และ `GPS_ACCURACY_ERROR_PERCENT` สำหรับจุดเริ่มต้นตาม spec route
+- [backend/app/db/migrations/m002_route_models.py](backend/app/db/migrations/m002_route_models.py): เพิ่ม migration stub สำหรับ schema ใหม่
+
+Constraint ที่ทำให้เป็นจริง:
+- REQ-FN-001: `PriceReference` มี `scrap_type`, `base_price_min`, `base_price_max`, `unit`
+- REQ-FN-002: `ScrapRequest` มี `seller_id`, `geo_point_lat`, `geo_point_lng`, `status`
+- REQ-SEC-002: `SellerProfile` มี `service_address_geo_point_lat`, `service_address_geo_point_lng`, `address_visible`, `consent_to_share_location`
+
+ผลการทดสอบ:
+- `cd /workspaces/baanprom-thampaphat/backend && pytest -q tests/test_route_models.py` -> 2 passed
+- `cd /workspaces/baanprom-thampaphat/backend && pytest -q` -> 17 passed, 1 skipped
+
+สิ่งที่ AI กำลังจะเดาแต่หยุดแล้วถามแทน: ไม่มี เพราะ spec ระบุชัดเจนว่าฟิลด์ต้องมีลักษณะใด และ route task นี้ไม่เปิด Q-xx ใด ๆ

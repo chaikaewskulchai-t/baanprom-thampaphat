@@ -5,11 +5,11 @@
 
 ## ไฟล์สำคัญ
 
-- `specs/NNN-<feature>/spec.md` = ข้อกำหนดของฟีเจอร์ 1 ฟีเจอร์ (คนเขียน คนตรวจ)
-- `specs/NNN-<feature>/plan.md` = แผนทางเทคนิคของฟีเจอร์นั้น (AI ร่าง คนตรวจ)
+- `specs/003-route/spec.md` = ข้อกำหนดของฟีเจอร์ 1 ฟีเจอร์ (คนเขียน คนตรวจ)
+- `specs/003-route/plan.md` = แผนทางเทคนิคของฟีเจอร์นั้น (AI ร่าง คนตรวจ)
 - `docs/srs/` = ต้นฉบับจากบทเรียนก่อนหน้า (catalogue.md, UC-07.md, glossary.md, baseline.md) ใช้อ้างอิงเมื่อ spec.md ไม่ชัด
-- `specs/NNN-<feature>/<feature>.feature` = เกณฑ์การยอมรับแบบ Gherkin (AC-xx-nn)
-- `specs/NNN-<feature>/rules.md` = กฎธุรกิจ (BR-xx) และ `models.md` = โมเดล (MD-xx)
+- `specs/003-route/route.feature` = เกณฑ์การยอมรับแบบ Gherkin (AC-xx-nn)
+- `specs/003-route/rules.md` = กฎธุรกิจ (BR-xx) และ `models.md` = โมเดล (MD-xx)
 - `prompt-log.md` = บันทึกทุกคำสั่งที่ใช้กับ AI คำถามที่ AI ถาม และคำตอบของทีม **เพิ่มต่อท้ายเท่านั้น ห้ามแก้หรือลบบันทึกเดิม** ถ้าทีมสั่งแก้งานรอบใหม่ ให้เพิ่มบันทึกใหม่ว่าแก้อะไรเพราะอะไร
 
 ## กฎ 8 ข้อ
